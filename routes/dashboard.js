@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/db')
-const authenticateToken = require('./middleware');
+const isAuthenticated = require('./middleware');
 
 /* GET home page. */
-router.get('/', authenticateToken, function (req, res, next) {
-  console.log("chegamos no index")
-  let sql = "SELECT * FROM expense WHERE user_id = ?"
+router.get('/', isAuthenticated, function (req, res, next) {
+  console.log(req.user)
+  let sql = "SELECT first_name, last_name, email FROM user WHERE id = ?"
 
   db.all(sql, [req.user.id], (err, data) => {
     if (err)
