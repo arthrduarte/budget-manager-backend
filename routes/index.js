@@ -6,11 +6,11 @@ var db = require('../db/db')
 router.get('/', function (req, res, next) {
   let sql = "SELECT * FROM expense"
 
-  db.all(sql, [], (err, rows)=>{
+  db.all(sql, [], (err, data)=>{
     if(err)
       return console.error(err.message)
 
-    res.json(rows)
+    res.json(data)
   })
 });
 
