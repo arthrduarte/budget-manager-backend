@@ -15,6 +15,20 @@ router.get('/', isAuthenticated, function (req, res, next) {
     })
 });
 
+// GET expense by date (/expense/2024-09)
+router.get('/:date', isAuthenticated, function (req, res, next) {
+    const [year, month] = req.params.date.split('-');
+
+    let sql = "SELECT * FROM expense WHERE strftime('%Y', date) = ? AND strftime('%m', date) = ? AND user_id = ?"
+
+    db.all(sql, [year, month, req.user.id], (err, data) => {
+        if (err)
+            return res.status(404).json({ error: err.message })
+
+        res.json(data)
+    })
+});
+
 router.post('/', isAuthenticated, function(req, res, next){
     const {name, amount, date, category_id} = req.body
 
