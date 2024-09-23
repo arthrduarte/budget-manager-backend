@@ -20,7 +20,7 @@ router.get('/:date', isAuthenticated, function (req, res, next) {
     const [year, month] = req.params.date.split('-');
 
     let sql = "SELECT income.id, income.name, income.amount, income.date, category.name AS category_name FROM income INNER JOIN category ON income.category_id = category.id WHERE income.date = ? AND income.user_id = ?";
-    db.all(sql, [year, month, req.user.id], (err, data) => {
+    db.all(sql, [`${year}-${month}`, req.user.id], (err, data) => {
         if (err)
             return res.status(404).json({ error: err.message })
 
