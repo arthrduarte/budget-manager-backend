@@ -19,8 +19,7 @@ router.get('/', isAuthenticated, function (req, res, next) {
 router.get('/:date', isAuthenticated, function (req, res, next) {
     const [year, month] = req.params.date.split('-');
 
-    let sql = "SELECT * FROM expense WHERE strftime('%Y', date) = ? AND strftime('%m', date) = ? AND user_id = ?"
-
+    let sql = "SELECT expense.id, expense.name, expense.amount, category.name AS category_name FROM expense INNER JOIN category ON expense.category_id = category.id WHERE strftime('%Y', expense.date) = ? AND strftime('%m', expense.date) = ? AND expense.user_id = ?";
     db.all(sql, [year, month, req.user.id], (err, data) => {
         if (err)
             return res.status(404).json({ error: err.message })
