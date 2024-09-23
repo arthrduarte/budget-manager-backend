@@ -8,6 +8,9 @@ var cors = require('cors')
 var dashboardRouter = require('./routes/dashboard');
 var loginRouter = require('./routes/login');
 var registerRouter = require('./routes/register');
+var expenseRouter = require('./routes/expense');
+var incomeRouter = require('./routes/income');
+var categoryRouter = require('./routes/category');
 
 var app = express();
 
@@ -21,6 +24,9 @@ app.use(cors())
 app.use('/dashboard', dashboardRouter);
 app.use('/login', loginRouter);
 app.use('/register', registerRouter);
+app.use('/expense', expenseRouter);
+app.use('/income', incomeRouter);
+app.use('/category', categoryRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

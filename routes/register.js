@@ -12,8 +12,12 @@ router.post('/', async function (req, res, next) {
 
     let sql = `INSERT INTO user (first_name, last_name, email, password_hash) VALUES (?, ?, ?, ?)`
     db.run(sql, [first_name, last_name, email, hashedPassword], function (err) {
-        if (err)
+        if (err) {
+            if (err.code === 'SQLITE_CONSTRAINT' && err.message.includes('UNIQUE constraint failed: user.email')) {
+                return res.status(400).json({ error: 'Email is already in use' });
+            }
             return res.status(500).json({ error: err.message })
+        }
 
         const user = { id: this.lastID }
         console.log(user)
