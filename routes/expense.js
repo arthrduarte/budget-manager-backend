@@ -19,8 +19,8 @@ router.get('/', isAuthenticated, function (req, res, next) {
 router.get('/:date', isAuthenticated, function (req, res, next) {
     const [year, month] = req.params.date.split('-');
 
-    let sql = "SELECT expense.id, expense.name, expense.amount, category.name AS category_name FROM expense INNER JOIN category ON expense.category_id = category.id WHERE strftime('%Y', expense.date) = ? AND strftime('%m', expense.date) = ? AND expense.user_id = ?";
-    db.all(sql, [year, month, req.user.id], (err, data) => {
+    let sql = "SELECT expense.id, expense.name, expense.amount, expense.date, category.name AS category_name FROM expense INNER JOIN category ON expense.category_id = category.id WHERE expense.date = ? AND expense.user_id = ?";
+    db.all(sql, [`${year}-${month}`,req.user.id], (err, data) => {
         if (err)
             return res.status(404).json({ error: err.message })
 
@@ -30,7 +30,7 @@ router.get('/:date', isAuthenticated, function (req, res, next) {
 
 router.post('/', isAuthenticated, function(req, res, next){
     const {name, amount, date, category_id} = req.body
-
+    
     let sql = "INSERT INTO expense (name, amount, date, category_id, user_id) VALUES (?, ?, ?, ?, ?)"
     db.run(sql, [name, amount, date, category_id, req.user.id], function (err){
         if (err)
