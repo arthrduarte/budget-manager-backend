@@ -5,7 +5,6 @@ const isAuthenticated = require('./middleware');
 
 /* GET home page. */
 router.get('/', isAuthenticated, function (req, res, next) {
-  console.log(req.user)
   let sql = "SELECT first_name, last_name, email FROM user WHERE id = ?"
 
   db.all(sql, [req.user.id], (err, data) => {
