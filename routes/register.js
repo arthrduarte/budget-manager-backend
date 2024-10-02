@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/db')
+const User = require('../models/userModel')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs');
 require('dotenv').config();
@@ -10,20 +11,20 @@ router.post('/', async function (req, res, next) {
     const { first_name, last_name, email, password } = req.body
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    let sql = `INSERT INTO user (first_name, last_name, email, password_hash) VALUES (?, ?, ?, ?)`
-    db.run(sql, [first_name, last_name, email, hashedPassword], function (err) {
-        if (err) {
-            if (err.code === 'SQLITE_CONSTRAINT' && err.message.includes('UNIQUE constraint failed: user.email')) {
-                return res.status(400).json({ error: 'Email is already in use' });
-            }
-            return res.status(500).json({ error: err.message })
+    try {
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: "Email is already in use" });
         }
 
-        const user = { id: this.lastID }
-        console.log(user)
-        const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET)
-        res.json({ message: 'User registered', accessToken: accessToken })
-    })
+        const user = new User({ first_name, last_name, email, password: hashedPassword })
+        await user.save()
+
+        const token = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET);
+        return res.status(200).json({ message: "Register successful:", token: token });
+    } catch (err) {
+        return res.status(500).json({ message: err.message });
+    }
 });
 
 module.exports = router;
