@@ -1,67 +1,103 @@
 const express = require('express');
 const router = express.Router();
+const Expense = require('../models/expenseModel')
 const db = require('../db/db')
 const isAuthenticated = require('./middleware');
 
 /* GET user expenses */
-router.get('/', isAuthenticated, function (req, res, next) {
-    let sql = "SELECT * FROM expense WHERE user_id = ?"
-
-    db.all(sql, [req.user.id], (err, data) => {
-        if (err)
-            return res.status(404).json({ error: err.message })
-
-        res.json(data)
-    })
+router.get('/', isAuthenticated, async (req, res, next) => {
+    console.log(req.user.id)
+    try {
+        const expenses = await Expense.find({ user_id: req.user.id })
+        return res.status(200).json({ expenses })
+    } catch (err) {
+        return res.status(404).json({ error: err.message })
+    }
 });
 
 // GET expense by date (/expense/2024-09)
-router.get('/:date', isAuthenticated, function (req, res, next) {
+router.get('/:date', isAuthenticated, async (req, res, next) => {
     const [year, month] = req.params.date.split('-');
+    console.log(req.user.id)
+    console.log(`Year: ${year}, Month: ${month}`);
 
-    let sql = "SELECT expense.id, expense.name, expense.amount, expense.date, category.name AS category_name FROM expense INNER JOIN category ON expense.category_id = category.id WHERE expense.date = ? AND expense.user_id = ?";
-    db.all(sql, [`${year}-${month}`,req.user.id], (err, data) => {
-        if (err)
-            return res.status(404).json({ error: err.message })
+    const startDate = new Date(`${year}-${month}-01T00:00:00.000Z`);
+    const endDate = new Date(startDate);
+    endDate.setMonth(endDate.getMonth() + 1);
 
-        res.json(data)
-    })
+    try {
+        const expenses = await Expense.find({
+            user_id: req.user.id,
+            date: {
+                $gte: startDate,
+                $lt: endDate
+            }
+        });
+        return res.status(200).json({ expenses });
+    } catch (err) {
+        return res.status(404).json({ error: err.message });
+    }
 });
 
-router.post('/', isAuthenticated, function(req, res, next){
-    const {name, amount, date, category_id} = req.body
-    
-    let sql = "INSERT INTO expense (name, amount, date, category_id, user_id) VALUES (?, ?, ?, ?, ?)"
-    db.run(sql, [name, amount, date, category_id, req.user.id], function (err){
-        if (err)
-            return res.status(500).json({ error: err.message })
+router.post('/', isAuthenticated, async (req, res, next) => {
+    const { name, amount, date, category_id } = req.body;
 
-        res.json({ message: 'Expense added successfully' });
-    })
+    try {
+        const expense = new Expense({
+            name,
+            amount,
+            date: new Date(date),
+            category_id,
+            user_id: req.user.id
+        });
+
+        await expense.save();
+        return res.status(201).json({ message: 'Expense added successfully', id: expense._id });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
 })
 
-router.put('/', isAuthenticated, function(req, res, next){
-    const {expense_id, name, amount, date, category_id} = req.body
+router.put('/', isAuthenticated, async (req, res, next) => {
+    const { expense_id, name, amount, date, category_id } = req.body;
 
-    let sql = "UPDATE expense SET name = ?, amount = ?, date = ?, category_id = ? WHERE id = ?"
-    db.run(sql, [name, amount, date, category_id, expense_id], function (err) {
-        if (err)
-            return res.status(500).json({ error: err.message })
+    try {
+        const expense = await Expense.findByIdAndUpdate(
+            expense_id,
+            {
+                name,
+                amount,
+                date: new Date(date),
+                category_id
+            },
+            { new: true }
+        );
 
-        res.json({ message: 'Expense updated successfully' });
-    })
+        if (!expense) {
+            return res.status(404).json({ error: 'Expense not found' });
+        }
+
+        return res.status(200).json({ message: 'Expense updated successfully', expense });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
 })
 
-router.delete('/', isAuthenticated, function (req, res, next) {
-    const {expense_id} = req.body
+router.delete('/', isAuthenticated, async (req, res, next) => {
+    const { expense_id } = req.body
 
-    let sql = "DELETE FROM expense WHERE id = ?"
-    db.run(sql, [expense_id], function (err) {
-        if (err)
-            return res.status(500).json({ error: err.message })
+    try {
+        const expense = await Expense.findByIdAndDelete(expense_id);
 
-        res.json({ message: 'Expense deleted successfully' });
-    })
+        if (!expense) {
+            return res.status(404).json({ error: 'Expense not found' });
+        }
+
+        return res.status(200).json({ message: 'Expense deleted successfully' });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+
 })
 
 module.exports = router;
