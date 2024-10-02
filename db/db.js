@@ -1,15 +1,13 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path')
+const mongoose = require('mongoose')
+mongoose.set("strictQuery", false);
 
-// Connect to the SQLite database
-let dbPath = path.join(__dirname, '..', '..', "budget-manager.db");
-console.log(dbPath)
-let db = new sqlite3.Database(dbPath, (err) => {
-    if (err) {
-        console.error(err.message);
-        return;
+module.exports = async () => {
+    try {
+        const mongoURI = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@arthur-cluster.6o1nt.mongodb.net/${process.env.MONGO_DB}?retryWrites=true&w=majority`;
+        await mongoose.connect(mongoURI)
+        console.log("MongoDB connected successfully");
+    } catch (err) {
+        console.error("Error connecting to MongoDB: ", err.message);
+        process.exit(1)
     }
-    console.log('Connected to the SQLite database.');
-});
-
-module.exports = db
+}
