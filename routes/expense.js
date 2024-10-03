@@ -9,7 +9,8 @@ router.get('/', isAuthenticated, async (req, res, next) => {
     console.log(req.user.id)
     try {
         const expenses = await Expense.find({ user_id: req.user.id })
-        return res.status(200).json({ expenses })
+
+        return res.status(200).json(expenses);
     } catch (err) {
         return res.status(404).json({ error: err.message })
     }
@@ -33,7 +34,7 @@ router.get('/:date', isAuthenticated, async (req, res, next) => {
                 $lt: endDate
             }
         });
-        return res.status(200).json({ expenses });
+        return res.status(200).json(expenses);
     } catch (err) {
         return res.status(404).json({ error: err.message });
     }
