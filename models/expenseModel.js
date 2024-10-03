@@ -14,10 +14,9 @@ const ExpenseSchema = new mongoose.Schema({
         type: Date,
         required: [true, "Expense date missing"]
     },
-    category_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Category',
-        required: [true, "Category ID missing"]
+    category: {
+        type: String,
+        required: [true, "Expense category is missing"]    
     },
     user_id: {
         type: mongoose.Schema.Types.ObjectId,

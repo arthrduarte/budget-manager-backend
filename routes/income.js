@@ -40,26 +40,26 @@ router.get('/:date', isAuthenticated, async (req, res, next) => {
 });
 
 router.post('/', isAuthenticated, async (req, res, next) => {
-    const { name, amount, date, category_id } = req.body;
+    const { name, amount, date, category } = req.body;
 
     try {
         const income = new Income({
             name,
             amount,
             date: new Date(date),
-            category_id,
+            category,
             user_id: req.user.id
         });
 
         await income.save();
-        return res.status(201).json({ message: 'Income added successfully', id: expense._id });
+        return res.status(201).json({ message: 'Income added successfully', id: income._id });
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }
 })
 
 router.put('/', isAuthenticated, async (req, res, next) => {
-    const { expense_id, name, amount, date, category_id } = req.body;
+    const { income_id, name, amount, date, category } = req.body;
 
     try {
         const income = await Income.findByIdAndUpdate(
@@ -68,7 +68,7 @@ router.put('/', isAuthenticated, async (req, res, next) => {
                 name,
                 amount,
                 date: new Date(date),
-                category_id
+                category
             },
             { new: true }
         );
@@ -77,7 +77,7 @@ router.put('/', isAuthenticated, async (req, res, next) => {
             return res.status(404).json({ error: 'Income not found' });
         }
 
-        return res.status(200).json({ message: 'Income updated successfully', expense });
+        return res.status(200).json({ message: 'Income updated successfully', income });
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }

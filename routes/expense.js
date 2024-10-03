@@ -40,14 +40,14 @@ router.get('/:date', isAuthenticated, async (req, res, next) => {
 });
 
 router.post('/', isAuthenticated, async (req, res, next) => {
-    const { name, amount, date, category_id } = req.body;
+    const { name, amount, date, category } = req.body;
 
     try {
         const expense = new Expense({
             name,
             amount,
             date: new Date(date),
-            category_id,
+            category,
             user_id: req.user.id
         });
 
@@ -59,7 +59,7 @@ router.post('/', isAuthenticated, async (req, res, next) => {
 })
 
 router.put('/', isAuthenticated, async (req, res, next) => {
-    const { expense_id, name, amount, date, category_id } = req.body;
+    const { expense_id, name, amount, date, category } = req.body;
 
     try {
         const expense = await Expense.findByIdAndUpdate(
@@ -68,7 +68,7 @@ router.put('/', isAuthenticated, async (req, res, next) => {
                 name,
                 amount,
                 date: new Date(date),
-                category_id
+                category
             },
             { new: true }
         );
