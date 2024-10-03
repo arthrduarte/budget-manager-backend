@@ -20,8 +20,8 @@ router.post('/', async function (req, res, next) {
         const user = new User({ first_name, last_name, email, password: hashedPassword })
         await user.save()
 
-        const token = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET);
-        return res.status(200).json({ message: "Register successful:", token: token });
+        const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET);
+        return res.status(200).json({ accessToken });
     } catch (err) {
         return res.status(500).json({ message: err.message });
     }

@@ -21,8 +21,8 @@ router.post('/', async (req, res, next) => {
       return res.status(400).json({ error: "Invalid password" });
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET);
-    return res.json({ token });
+    const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET);
+    return res.json({ accessToken });
 
   } catch (err) {
     return res.status(500).json({ message: err.message });
