@@ -1,67 +1,103 @@
 const express = require('express');
 const router = express.Router();
+const Income = require('../models/incomeModel')
 const db = require('../db/db')
 const isAuthenticated = require('./middleware');
 
 /* GET user incomes */
-router.get('/', isAuthenticated, function (req, res, next) {
-    let sql = "SELECT * FROM income WHERE user_id = ?"
-
-    db.all(sql, [req.user.id], (err, data) => {
-        if (err)
-            return res.status(404).json({ error: err.message })
-
-        res.json(data)
-    })
+router.get('/', isAuthenticated, async (req, res, next) => {
+    console.log(req.user.id)
+    try {
+        const incomes = await Income.find({ user_id: req.user.id })
+        return res.status(200).json(incomes)
+    } catch (err) {
+        return res.status(404).json({ error: err.message })
+    }
 });
 
 // GET income by date (/income/2024-09)
-router.get('/:date', isAuthenticated, function (req, res, next) {
+router.get('/:date', isAuthenticated, async (req, res, next) => {
     const [year, month] = req.params.date.split('-');
+    console.log(req.user.id)
+    console.log(`Year: ${year}, Month: ${month}`);
 
-    let sql = "SELECT income.id, income.name, income.amount, income.date, category.name AS category_name FROM income INNER JOIN category ON income.category_id = category.id WHERE income.date = ? AND income.user_id = ?";
-    db.all(sql, [`${year}-${month}`, req.user.id], (err, data) => {
-        if (err)
-            return res.status(404).json({ error: err.message })
+    const startDate = new Date(`${year}-${month}-01T00:00:00.000Z`);
+    const endDate = new Date(startDate);
+    endDate.setMonth(endDate.getMonth() + 1);
 
-        res.json(data)
-    })
+    try {
+        const incomes = await Income.find({
+            user_id: req.user.id,
+            date: {
+                $gte: startDate,
+                $lt: endDate
+            }
+        });
+        return res.status(200).json(incomes);
+    } catch (err) {
+        return res.status(404).json({ error: err.message });
+    }
 });
 
-router.post('/', isAuthenticated, function (req, res, next) {
-    const { name, amount, date, category_id } = req.body
+router.post('/', isAuthenticated, async (req, res, next) => {
+    const { name, amount, date, category } = req.body;
 
-    let sql = "INSERT INTO income (name, amount, date, category_id, user_id) VALUES (?, ?, ?, ?, ?)"
-    db.run(sql, [name, amount, date, category_id, req.user.id], function (err) {
-        if (err)
-            return res.status(500).json({ error: err.message })
+    try {
+        const income = new Income({
+            name,
+            amount,
+            date: new Date(date),
+            category,
+            user_id: req.user.id
+        });
 
-        res.json({ message: 'Income added successfully' });
-    })
+        await income.save();
+        return res.status(201).json({ message: 'Income added successfully', id: income._id });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
 })
 
-router.put('/', isAuthenticated, function (req, res, next) {
-    const { income_id, name, amount, date, category_id } = req.body
+router.put('/', isAuthenticated, async (req, res, next) => {
+    const { income_id, name, amount, date, category } = req.body;
 
-    let sql = "UPDATE income SET name = ?, amount = ?, date = ?, category_id = ? WHERE id = ?"
-    db.run(sql, [name, amount, date, category_id, income_id], function (err) {
-        if (err)
-            return res.status(500).json({ error: err.message })
+    try {
+        const income = await Income.findByIdAndUpdate(
+            income_id,
+            {
+                name,
+                amount,
+                date: new Date(date),
+                category
+            },
+            { new: true }
+        );
 
-        res.json({ message: 'Income updated successfully' });
-    })
+        if (!income) {
+            return res.status(404).json({ error: 'Income not found' });
+        }
+
+        return res.status(200).json({ message: 'Income updated successfully', income });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
 })
 
-router.delete('/', isAuthenticated, function (req, res, next) {
+router.delete('/', isAuthenticated, async (req, res, next) => {
     const { income_id } = req.body
 
-    let sql = "DELETE FROM income WHERE id = ?"
-    db.run(sql, [income_id], function (err) {
-        if (err)
-            return res.status(500).json({ error: err.message })
+    try {
+        const income = await Income.findByIdAndDelete(income_id);
 
-        res.json({ message: 'Income deleted successfully' });
-    })
+        if (!income) {
+            return res.status(404).json({ error: 'Income not found' });
+        }
+
+        return res.status(200).json({ message: 'Income deleted successfully' });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+
 })
 
 module.exports = router;
