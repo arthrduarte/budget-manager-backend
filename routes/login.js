@@ -5,7 +5,6 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken')
 require('dotenv').config();
 
-/* POST user login. */
 router.post('/', async (req, res, next) => {
   const { email, password } = req.body;
 

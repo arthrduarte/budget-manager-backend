@@ -4,7 +4,6 @@ const router = express.Router();
 const db = require('../db/db')
 const isAuthenticated = require('./middleware');
 
-/* GET home page. */
 router.get('/', isAuthenticated, async (req, res, next) =>{
   try {
     const user = await User.findOne({ _id: req.user.id });

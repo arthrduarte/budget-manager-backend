@@ -4,7 +4,6 @@ const Income = require('../models/incomeModel')
 const db = require('../db/db')
 const isAuthenticated = require('./middleware');
 
-/* GET user incomes */
 router.get('/', isAuthenticated, async (req, res, next) => {
     console.log(req.user.id)
     try {

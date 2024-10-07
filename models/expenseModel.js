@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 
-// Define the Expense schema
 const ExpenseSchema = new mongoose.Schema({
     name: {
         type: String,
