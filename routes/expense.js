@@ -4,7 +4,6 @@ const Expense = require('../models/expenseModel')
 const db = require('../db/db')
 const isAuthenticated = require('./middleware');
 
-/* GET user expenses */
 router.get('/', isAuthenticated, async (req, res, next) => {
     console.log(req.user.id)
     try {
