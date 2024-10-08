@@ -3,7 +3,7 @@ Budget Manager is a single-page application designed to allow users to track the
 
 ## Technologies Used
 
-### [Frontend]((https://github.com/arthrduarte/budget-manager)
+### [Frontend](https://github.com/arthrduarte/budget-manager)
 - **Vite**: A build tool providing a fast and lean development experience with optimized builds.
 - **TypeScript**: A typed superset of JavaScript that compiles to plain JavaScript, adding static types.
 - **Tailwind CSS**: Utility-first CSS framework used for styling the application.
